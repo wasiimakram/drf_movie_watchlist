@@ -4,13 +4,20 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+
     path('api/categories/', include('categories.urls')),
     path('api/movies/', include('movies.urls')),
+
+    # --- JWT Auth Endpoints ---
+    # POST {"username", "password"} -> {"access", "refresh"}
+    path('api/token/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
+    # POST {"refresh"} -> new {"access"}
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
 
      # --- Swagger - Documentation Endpoints (drf-spectacular) ---
     # 1. Schema: Generates the raw OpenAPI JSON file (Machine Readable)

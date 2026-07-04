@@ -12,7 +12,7 @@ class CategoryListAndCreateAPIView(generics.ListCreateAPIView):
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
 class CategoryDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -25,4 +25,4 @@ class CategoryDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIV
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_class = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
