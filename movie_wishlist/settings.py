@@ -48,7 +48,10 @@ INSTALLED_APPS = [
 
     # Project Apps
     'categories',
-    'movies'
+    'movies',
+    'watchlist',
+    'notifications',
+    'reviews',
 ]
 
 MIDDLEWARE = [

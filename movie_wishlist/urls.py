@@ -12,6 +12,9 @@ urlpatterns = [
 
     path('api/categories/', include('categories.urls')),
     path('api/movies/', include('movies.urls')),
+    path('api/watchlist/', include('watchlist.urls')),
+    path('api/notifications/', include('notifications.urls')),
+    path('api/reviews/', include('reviews.urls')),
 
     # --- JWT Auth Endpoints ---
     # POST {"username", "password"} -> {"access", "refresh"}
