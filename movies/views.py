@@ -1,7 +1,7 @@
 from rest_framework import generics, filters, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Movie
-from .serializers import MovieSerializer
+from .serializers import MovieSerializer, MovieListSerializer
 from .filters import MovieFilter
 from .pagination import MoviePagination
 from .throttles import MovieUserThrottle
@@ -42,8 +42,18 @@ class MovieListAndCreateAPIView(generics.ListCreateAPIView):
     # with_categories() = MovieQuerySet method (see movies/models.py) that
     # wraps prefetch_related('category') so it's defined once, not repeated
     # in every view.
-    queryset = Movie.objects.with_categories() 
-    serializer_class = MovieSerializer
+    queryset = Movie.objects.with_categories()
+
+    # Response shaping (concept #23): this view serves TWO kinds of request with diff serializers,
+    # so instead of one fixed serializer_class it picks per request:
+    #   GET  (list)   -> MovieListSerializer  (light, card-sized fields)
+    #   POST (create) -> MovieSerializer      (all fields + all validations)
+    # get_serializer_class() is to serializer_class what get_queryset() is to
+    # queryset — the dynamic method version of the static attribute.
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return MovieSerializer 
+        return MovieListSerializer
 
     # Stacked backends, applied in order: filter -> search -> order. GET/list-only.
     # This search only based on specific columns and return result

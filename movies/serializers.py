@@ -40,7 +40,7 @@ class MovieSerializer(serializers.ModelSerializer):
         avg = obj.reviews.aggregate(value=Avg('rating'))['value']
         return round(avg, 1) if avg is not None else None  # None = no reviews yet
 
-    # ------ Validationsn Methods --------
+    # ------ Validations Methods --------
     def validate_year(self, value):
         # DRF calls this automatically because of the name: validate_ + year
         current_year = date.today().year
@@ -67,3 +67,23 @@ class MovieSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError('Pick at least one category.')
         return value
+
+
+class MovieListSerializer(serializers.ModelSerializer):
+    """
+    LIGHT serializer — used ONLY for the list endpoint (GET /api/movies/).
+    A list screen shows movie cards, so we send just card-sized data:
+    no plot, no poster_url, no language/country.
+    The full MovieSerializer above stays in charge of detail + create/update.
+    """
+
+    category_detail = CategorySerializer(source='category', many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Movie
+        fields = ['id', 'title', 'year', 'director', 'imdb_rating', 'average_rating', 'category_detail']
+
+    def get_average_rating(self, obj):
+        avg = obj.reviews.aggregate(value=Avg('rating'))['value']
+        return round(avg, 1) if avg is not None else None

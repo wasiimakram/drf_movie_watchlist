@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'watchlist',
     'notifications',
     'reviews',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -143,10 +144,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # drf-spectacular needs to be the schema generator for ALL views,
+    # otherwise /api/schema/ fails with "Incompatible AutoSchema" errors
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # simplejwt — how long an access/refresh token stays valid before expiring
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }

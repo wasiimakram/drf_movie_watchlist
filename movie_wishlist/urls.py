@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/watchlist/', include('watchlist.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/reviews/', include('reviews.urls')),
+    path('api/auth/', include('accounts.urls')),
 
     # --- JWT Auth Endpoints ---
     # POST {"username", "password"} -> {"access", "refresh"}
