@@ -78,8 +78,12 @@ class MovieListAndCreateAPIView(generics.ListCreateAPIView):
     # Rate limit — 50 requests/min per user (see movies/throttles.py)
     throttle_classes = [MovieUserThrottle]
 
-    # Every request must include a valid JWT access token
-    permission_classes = [permissions.IsAuthenticated]
+    # Catalog rule (built-in DjangoModelPermissions):
+    #   GET    -> any authenticated user
+    #   POST   -> needs 'add_movie' permission    (superuser/admin has ALL perms automatically)
+    #   PUT/PATCH -> 'change_movie', DELETE -> 'delete_movie'
+    # Normal signups hold no permissions -> read-only for them, no custom code.
+    permission_classes = [permissions.DjangoModelPermissions]
 
 class MovieDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
 
@@ -94,6 +98,7 @@ class MovieDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIView
     queryset = Movie.objects.with_categories()
     serializer_class = MovieSerializer
 
-    # Same rate limit + auth requirement as the list/create view
+    # Same rate limit as the list/create view
     throttle_classes = [MovieUserThrottle]
-    permission_classes = [permissions.IsAuthenticated]
+    # Same catalog rule: read for all authenticated, write only with model permissions
+    permission_classes = [permissions.DjangoModelPermissions]

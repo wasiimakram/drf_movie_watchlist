@@ -12,7 +12,9 @@ class CategoryListAndCreateAPIView(generics.ListCreateAPIView):
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # Catalog rule: GET for any authenticated user; POST/PUT/PATCH/DELETE only
+    # with model permissions (add/change/delete_category) — admin has them all.
+    permission_classes = [permissions.DjangoModelPermissions]
 
 class CategoryDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -25,4 +27,6 @@ class CategoryDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIV
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # Catalog rule: GET for any authenticated user; POST/PUT/PATCH/DELETE only
+    # with model permissions (add/change/delete_category) — admin has them all.
+    permission_classes = [permissions.DjangoModelPermissions]
