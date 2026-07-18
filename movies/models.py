@@ -21,7 +21,11 @@ class Movie(models.Model):
     category = models.ManyToManyField(Category, related_name='movies')
     director = models.CharField(max_length=200)
     plot = models.TextField(blank=True)
-    poster_url = models.URLField(blank=True)
+    poster_url = models.URLField(blank=True)  # external link (e.g. from OMDB later)
+    # UPLOADED poster file (concept #35). The FILE goes to disk
+    # (MEDIA_ROOT/posters/), the DB column stores only its PATH as text.
+    # ImageField = FileField + "is it really an image?" check (needs Pillow).
+    poster = models.ImageField(upload_to='posters/', null=True, blank=True)
     imdb_rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     runtime_minutes = models.IntegerField(null=True, blank=True)
     language = models.CharField(max_length=100, blank=True)

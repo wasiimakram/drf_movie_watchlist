@@ -136,6 +136,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Uploaded files (concept #35): the FILES live on disk, DB stores only paths.
+MEDIA_ROOT = BASE_DIR / 'media'   # disk folder where all uploads are saved
+MEDIA_URL = '/media/'             # URL prefix to serve them back, e.g. /media/posters/x.jpg
+
 
 # DRF — JWTAuthentication reads the "Authorization: Bearer <token>" header
 # and identifies the user from it. This alone does NOT force login on any

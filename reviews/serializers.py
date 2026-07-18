@@ -31,3 +31,18 @@ class ReviewSerializer(serializers.ModelSerializer):
         if value < 1 or value > 5:
             raise serializers.ValidationError('Rating must be between 1 and 5.')
         return value
+
+
+class ReviewPublicSerializer(ReviewSerializer):
+    """
+    Public listing for /api/movies/<movie_id>/reviews/ — WHO said WHAT.
+    No movie fields: the URL already says which movie we're looking at.
+    Inherits stars + get_stars from ReviewSerializer for free.
+    """
+
+    # source= walks the FK: review.user.username (same idea as source='movie',
+    # just one step deeper). read_only — usernames are display data here.
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta(ReviewSerializer.Meta):
+        fields = ['id', 'username', 'rating', 'stars', 'text', 'created_at']

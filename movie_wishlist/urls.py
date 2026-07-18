@@ -32,3 +32,7 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
 ]
+
+# Serve uploaded files in DEVELOPMENT (static() returns [] when DEBUG=False —
+# in production a web server / cloud storage serves media, never Django).
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

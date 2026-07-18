@@ -3,6 +3,7 @@ from .views import (
     MovieListAndCreateAPIView,
     MovieDetailAndUpdateAndDeleteAPIView,
 )
+from reviews.views import MovieReviewsListAPIView
 
 urlpatterns = [
     # POST, GET List
@@ -10,6 +11,10 @@ urlpatterns = [
 
     # GET, PUT, PATCH, DELETE
     path('<int:pk>/', MovieDetailAndUpdateAndDeleteAPIView.as_view(), name='movie-detail'),
+
+    # Nested route: all reviews of ONE movie (view lives in the reviews app).
+    # <int:movie_id> here is what the view reads as self.kwargs['movie_id'].
+    path('<int:movie_id>/reviews/', MovieReviewsListAPIView.as_view(), name='movie-reviews'),
 ]
 
 # ---------------- Concept #22 reference: ViewSet + router (commented) ----------------

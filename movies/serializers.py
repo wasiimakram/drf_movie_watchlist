@@ -21,7 +21,7 @@ class MovieSerializer(serializers.ModelSerializer):
         model = Movie
         fields = [
             'id', 'title', 'year', 'category', 'category_detail', 'average_rating',
-            'director', 'plot', 'poster_url', 'imdb_rating', 'runtime_minutes',
+            'director', 'plot', 'poster_url', 'poster', 'imdb_rating', 'runtime_minutes',
             'language', 'country', 'created_at'
         ]
         read_only_fields = ['created_at']
@@ -82,7 +82,7 @@ class MovieListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ['id', 'title', 'year', 'director', 'imdb_rating', 'average_rating', 'category_detail']
+        fields = ['id', 'title', 'year', 'director', 'poster', 'imdb_rating', 'average_rating', 'category_detail']
 
     def get_average_rating(self, obj):
         avg = obj.reviews.aggregate(value=Avg('rating'))['value']
