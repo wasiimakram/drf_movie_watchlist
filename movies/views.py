@@ -102,3 +102,81 @@ class MovieDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIView
     throttle_classes = [MovieUserThrottle]
     # Same catalog rule: read for all authenticated, write only with model permissions
     permission_classes = [permissions.DjangoModelPermissions]
+
+
+# ============================================================================
+# CONCEPT #22 REFERENCE — the SAME movie API on the other two "floors".
+  # Commented out on purpose: our real implementation is the generics version
+# above. Kept here so the three styles can be compared side by side.
+# ============================================================================
+
+# ---------------- Floor 1: APIView — manual mode ----------------
+# You write one method per HTTP verb, and every step inside it by hand.
+# Compare with MovieListAndCreateAPIView above: same result, but we LOSE all
+# the free extras (filtering, search, ordering, pagination, throttling) —
+# each would need manual wiring here.
+#
+# URLs: wired exactly like our generics — same style, same path() lines:
+#     path('', MovieListAPIView.as_view(), name='movie-list'),
+#     path('<int:pk>/', MovieDetailAPIView.as_view(), name='movie-detail'),
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from django.shortcuts import get_object_or_404
+#
+#
+# class MovieListAPIView(APIView):
+#
+#     def get(self, request):
+#         movies = Movie.objects.with_categories()                  # you fetch
+#         serializer = MovieListSerializer(movies, many=True)       # you serialize
+#         return Response(serializer.data)                          # you respond
+#
+#     def post(self, request):
+#         serializer = MovieSerializer(data=request.data)           # you bind input
+#         serializer.is_valid(raise_exception=True)                 # you validate (400 on fail)
+#         serializer.save()                                         # you save
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+#
+# class MovieDetailAPIView(APIView):
+#
+#     def get(self, request, pk):
+#         movie = get_object_or_404(Movie, pk=pk)                   # you fetch-or-404
+#         serializer = MovieSerializer(movie)
+#         return Response(serializer.data)
+#
+#     def patch(self, request, pk):
+#         movie = get_object_or_404(Movie, pk=pk)
+#         # partial=True = PATCH semantics: only sent fields are updated
+#         serializer = MovieSerializer(movie, data=request.data, partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data)
+#
+#     def delete(self, request, pk):
+#         movie = get_object_or_404(Movie, pk=pk)
+#         movie.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ---------------- Floor 3: ViewSet — bundle mode ----------------
+# ONE class replaces BOTH generic classes above (list + detail + all writes),
+# and urls.py is replaced by a router (see commented block in movies/urls.py):
+#     router = DefaultRouter()
+#     router.register('', MovieViewSet, basename='movie')
+#     urlpatterns = router.urls
+# The router GENERATES what we hand-write today:
+#     ''          -> list + create            (GET, POST)
+#     '<int:pk>/' -> detail + update + delete (GET, PUT, PATCH, DELETE)
+# Note: looks identical to a generic view — because it IS the same machinery,
+# one floor up. Our hooks (get_serializer_class, filter_backends, pagination,
+# throttles, permissions) would all still work on it unchanged.
+
+# from rest_framework import viewsets
+#
+#
+# class MovieViewSet(viewsets.ModelViewSet):
+#     queryset = Movie.objects.with_categories()
+#     serializer_class = MovieSerializer
