@@ -2,12 +2,17 @@ from django.urls import path, include
 from .views import (
     MovieListAndCreateAPIView,
     MovieDetailAndUpdateAndDeleteAPIView,
+    MovieImportAPIView,
 )
 from reviews.views import MovieReviewsListAPIView
 
 urlpatterns = [
     # POST, GET List
     path('', MovieListAndCreateAPIView.as_view(), name='movie-list'),
+
+    # POST {"title": "..."} -> fetch from OMDB + create (admin only).
+    # Keep it at top, so it don't mix with <id> request.
+    path('import-from-omdb/', MovieImportAPIView.as_view(), name='movie-import'),
 
     # GET, PUT, PATCH, DELETE
     path('<int:pk>/', MovieDetailAndUpdateAndDeleteAPIView.as_view(), name='movie-detail'),

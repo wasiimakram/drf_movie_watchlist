@@ -1,10 +1,14 @@
-from rest_framework import generics, filters, permissions
+from rest_framework import generics, filters, permissions, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from categories.models import Category
 from .models import Movie
 from .serializers import MovieSerializer, MovieListSerializer
 from .filters import MovieFilter
 from .pagination import MoviePagination
 from .throttles import MovieUserThrottle
+from .services import fetch_movie_from_omdb, OmdbError
 
 class MovieListAndCreateAPIView(generics.ListCreateAPIView):
 
@@ -102,6 +106,47 @@ class MovieDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIView
     throttle_classes = [MovieUserThrottle]
     # Same catalog rule: read for all authenticated, write only with model permissions
     permission_classes = [permissions.DjangoModelPermissions]
+
+
+class MovieImportAPIView(APIView):
+    """
+    POST /api/movies/import/   {"title": "Interstellar"}   (admin only)
+
+    Concept #28: our backend acting as an API CLIENT — it calls OMDB,
+    translates the answer, and saves a full movie from just a title.
+    A real APIView (concept #22 floor 1): not CRUD-on-a-queryset, so
+    generics don't fit — we write post() by hand.
+    """
+    permission_classes = [permissions.IsAdminUser]  # is_staff only, built-in
+
+    def post(self, request):
+        title = request.data.get('title')
+        if not title:
+            return Response({'title': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Ask OMDB (all external-API mess lives in services.py)
+        try:
+            movie_data = fetch_movie_from_omdb(title)
+        except OmdbError as e:
+            # 502 Bad Gateway = "an upstream server let US down" — the honest
+            # status when the failure is OMDB's side, not the client's.
+            return Response({'detail': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+
+        # 2. Genre names -> Category rows. get_or_create reuses existing
+        # categories ("Sci-Fi" exists? use it) and creates the new ones —
+        # our Category.save() auto-generates slugs as usual.
+        category_ids = []
+        for genre_name in movie_data.pop('genres'):
+            category, _created = Category.objects.get_or_create(name=genre_name)
+            category_ids.append(category.id)
+        movie_data['category'] = category_ids
+
+        # 3. Reuse MovieSerializer so ALL our validations run — including
+        # the duplicate title+year check. Import twice -> clean 400.
+        serializer = MovieSerializer(data=movie_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # ============================================================================
