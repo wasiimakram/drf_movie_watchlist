@@ -87,7 +87,7 @@ class MovieListAndCreateAPIView(generics.ListCreateAPIView):
     #   POST   -> needs 'add_movie' permission    (superuser/admin has ALL perms automatically)
     #   PUT/PATCH -> 'change_movie', DELETE -> 'delete_movie'
     # Normal signups hold no permissions -> read-only for them, no custom code.
-    # permission_classes = [permissions.DjangoModelPermissions]
+    permission_classes = [permissions.DjangoModelPermissions]
 
 class MovieDetailAndUpdateAndDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
 
