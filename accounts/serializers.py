@@ -24,4 +24,9 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # create_user() HASHES the password before saving.
         # (User.objects.create() would store it as readable text — never that!)
-        return User.objects.create_user(**validated_data)
+        #
+        # is_active=False must go IN the create call, not after it: the
+        # post_save signal fires on the FIRST save, and our email guard
+        # checks is_active at that exact moment. Setting it afterwards
+        # means the signal saw an active user -> no email (the bug we hit).
+        return User.objects.create_user(**validated_data, is_active=False)
