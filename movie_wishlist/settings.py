@@ -153,6 +153,9 @@ REST_FRAMEWORK = {
     # drf-spectacular needs to be the schema generator for ALL views,
     # otherwise /api/schema/ fails with "Incompatible AutoSchema" errors
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # Every raised API error passes through this function -> one envelope
+    # shape for ALL errors (concept #31): {success, status_code, errors}
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
 }
 
 # simplejwt — how long an access/refresh token stays valid before expiring
