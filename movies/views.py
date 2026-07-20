@@ -11,6 +11,7 @@ from .filters import MovieFilter
 from .pagination import MoviePagination
 from .throttles import MovieUserThrottle
 from .services import fetch_movie_from_omdb, OmdbError
+from movie_wishlist.tasks import import_movie_task
 
 """
 The core piece — cache_page(60): wraps a view function so that the first call runs it 
@@ -155,6 +156,37 @@ class MovieImportAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class BulkMovieImportAPIView(APIView):
+    """
+    POST /api/movies/bulk-import/   {"titles": ["Interstellar", "Arrival"]}
+    (admin only)
+
+    Concept #36: queues ONE Celery task per title and returns immediately —
+    the actual OMDB calls + saves happen later, in the worker process,
+    not during this request. Compare with MovieImportAPIView above (same
+    work, done synchronously — fine for 1 title, painful for 20).
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        titles = request.data.get('titles')
+        if not titles:
+            return Response({'titles': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        for title in titles:
+            # .delay() does NOT run the task now — it just drops a message
+            # on the Redis queue and returns instantly. The Celery worker
+            # (a separate process) picks it up whenever it's free.
+            import_movie_task.delay(title)
+
+        # 202 Accepted = "request understood, work is happening elsewhere"
+        # — the honest status code for background/async processing.
+        return Response(
+            {'detail': f'{len(titles)} import(s) queued.'},
+            status=status.HTTP_202_ACCEPTED,
+        )
 
 
 # ============================================================================

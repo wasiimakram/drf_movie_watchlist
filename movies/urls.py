@@ -3,6 +3,7 @@ from .views import (
     MovieListAndCreateAPIView,
     MovieDetailAndUpdateAndDeleteAPIView,
     MovieImportAPIView,
+    BulkMovieImportAPIView,
 )
 from reviews.views import MovieReviewsListAPIView
 
@@ -13,6 +14,9 @@ urlpatterns = [
     # POST {"title": "..."} -> fetch from OMDB + create (admin only).
     # Keep it at top, so it don't mix with <id> request.
     path('import-from-omdb/', MovieImportAPIView.as_view(), name='movie-import'),
+
+    # POST {"titles": [...]} -> queue one Celery task per title (admin only).
+    path('bulk-import/', BulkMovieImportAPIView.as_view(), name='movie-bulk-import'),
 
     # GET, PUT, PATCH, DELETE
     path('<int:pk>/', MovieDetailAndUpdateAndDeleteAPIView.as_view(), name='movie-detail'),

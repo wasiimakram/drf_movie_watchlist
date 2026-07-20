@@ -175,6 +175,13 @@ CACHES = {
     }
 }
 
+# Celery (concept #36) — background tasks. We select drawer (2) for celery, separate from
+# the cache's drawer (1), so queued jobs and cached pages never mix.
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/2'   # where queued jobs wait
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/2'  # where task results are stored
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60 # 30 mints after kill task
+
 # CORS — dev only: our frontend HTML pages run on a different origin
 # (file:// or another port), so the browser blocks their fetch() calls
 # to :8000 unless Django explicitly allows cross-origin requests.
