@@ -1,9 +1,12 @@
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import generics, permissions
 from .models import Category
 from .serializers import CategorySerializer
 
 
+@method_decorator(cache_page(60), name='get')  # cache GET responses for 60s
 class CategoryListAndCreateAPIView(generics.ListCreateAPIView):
     """
     GET  /api/categories/   -> List all categories

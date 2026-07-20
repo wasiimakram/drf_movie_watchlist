@@ -164,6 +164,17 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+# Caching (concept #27) — Redis running locally.
+# Redis has 16 separate "drawers" (numbered 0-15) inside one server, so
+# different apps don't mix their data. We use drawer 1 and leave 0 free
+# for something else later (e.g. Celery, concept #36).
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+    }
+}
+
 # CORS — dev only: our frontend HTML pages run on a different origin
 # (file:// or another port), so the browser blocks their fetch() calls
 # to :8000 unless Django explicitly allows cross-origin requests.

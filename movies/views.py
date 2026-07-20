@@ -1,6 +1,8 @@
 from rest_framework import generics, filters, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from categories.models import Category
 from .models import Movie
@@ -10,6 +12,12 @@ from .pagination import MoviePagination
 from .throttles import MovieUserThrottle
 from .services import fetch_movie_from_omdb, OmdbError
 
+"""
+The core piece — cache_page(60): wraps a view function so that the first call runs it 
+normally and stores the response in Redis; every call after that, for 60 seconds, 
+returns the stored copy without touching your view code (no DB query, no filters) at all.
+"""
+@method_decorator(cache_page(60), name='get')  # cache GET responses for 60s
 class MovieListAndCreateAPIView(generics.ListCreateAPIView):
 
     """
